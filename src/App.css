@@ -1,3 +1,5 @@
+
+
 .App {
   text-align: center;
 }
@@ -14,7 +16,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #0B0500;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -26,6 +28,35 @@
 
 .App-link {
   color: #61dafb;
+}
+
+/* #break-decrement, #break-increment, #session-increment, #session-decrement { */
+button {
+  width: 40px;
+  border:#0B0500 1px solid;
+  background-color: #FE5E41;
+  color: #D8F1A0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+#outer-box {
+  display: flex
+}
+
+#break-container, #session-container {
+  width: 100px;
+  background-color: #00A878;
+  color: #D8F1A0;
+}
+
+#start_stop, #reset {
+  width: 100px;
+}
+
+#time-left {
+  background-color: #00A878;
+  color: #D8F1A0;
 }
 
 @keyframes App-logo-spin {

@@ -148,32 +148,40 @@ class Clock extends React.Component {
     return (
       <div>
         <h1>Clock</h1>
-        <p id="break-label">Break Length</p>
-        <Button id = "break-decrement"
-                buttonText = "-"
-                attr = "break"
-                newVal = {this.state.breakLength - 1}
-                handler = {this.handleClick} />
-        <Button id = "break-increment"
-                buttonText = "+"
-                attr = "break"
-                newVal = {this.state.breakLength + 1}
-                handler = {this.handleClick} />
+        <div id="outer-box">
+          <div id = "break-container">
+          <p id="break-label">Break Length</p>
+          <Button id = "break-decrement"
+                  buttonText = "-"
+                  attr = "break"
+                  newVal = {this.state.breakLength - 1}
+                  handler = {this.handleClick} />
+          <Button id = "break-increment"
+                  buttonText = "+"
+                  attr = "break"
+                  newVal = {this.state.breakLength + 1}
+                  handler = {this.handleClick} />
+          
+          <p id="break-length">{this.state.breakLength}</p>
+          </div>
         
-        <p id="break-length">{this.state.breakLength}</p>
-        <p id="session-label">Session Length</p>
-        <Button id = "session-decrement"
-                buttonText = "-"
-                attr = "session"
-                newVal = {this.state.sessionLength - 1}
-                handler = {this.handleClick} />
-        <Button id = "session-increment"
-                buttonText = "+"
-                attr = "session"
-                newVal = {this.state.sessionLength + 1}
-                handler = {this.handleClick} />
+          <div id = "session-container">
+          <p id="session-label">Session Length</p>
+          <Button id = "session-decrement"
+                  buttonText = "-"
+                  attr = "session"
+                  newVal = {this.state.sessionLength - 1}
+                  handler = {this.handleClick} />
+          <Button id = "session-increment"
+                  buttonText = "+"
+                  attr = "session"
+                  newVal = {this.state.sessionLength + 1}
+                  handler = {this.handleClick} />
+          
+          <p id="session-length">{this.state.sessionLength}</p>
+          </div>
+        </div>
         
-        <p id="session-length">{this.state.sessionLength}</p>
         <p id="timer-label">{this.state.clockState}</p>
         <p id="time-left">{this.state.timeLeft}</p>
         <audio 
