@@ -1,14 +1,45 @@
 import './App.css';
 import React from 'react';
+import { createStore } from 'redux';
+import { Provider, connect } from 'react-redux';
+
+let initialState = {
+  breakLength: 5, 
+  sessionLength: 25,
+  clockState: "ready",
+  minutesLeft: 25,
+  secondsLeft: 0,
+  startButtonText: "start",
+  timeLeft: "25:00"
+}
 
 
-function App() {
+const reducer = function (state = initialState, action) {
+  switch (action.type) {
+    case "INCREMENT_BREAK":
+      return Object.assign({}, {breakLength: state.breakLength + 1})
+    case "DECREMENT_BREAK":
+      return Object.assign({}, {breakLength: state.breakLength - 1})
+    default:
+      return state;
+  }
+};
+
+let store = createStore(reducer);
+
+
+
+
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-       <Clock />
-      </header>
-    </div>
+    <Provider store={store}>
+      <div className="App">
+        <header className="App-header">
+        <ClockContainer />
+        </header>
+      </div>
+    </Provider>
+    
   );
 }
 
@@ -197,6 +228,9 @@ class Clock extends React.Component {
     )
   }
 }
+
+const ClockContainer = connect()(Clock);
+
 
 class Button extends React.Component {
   constructor(props) {
