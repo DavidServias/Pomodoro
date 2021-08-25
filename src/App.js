@@ -18,11 +18,15 @@ let initialState = {
 const reducer = function (state = initialState, action) {
   console.log("reducer called");
   switch (action.type) {
+
     case "UPDATE_BREAKLENGTH":
       console.log('action.type = UPDATE_BREAKLENGTH, action.value = ' + action.newVal)
       return { ...state, breakLength: action.newVal };
-    case "DECREMENT_BREAK":
-      return Object.assign({}, { breakLength: state.breakLength - 1 })
+
+    case "UPDATE_SESSIONLENGTH":
+      console.log('action.type = UPDATE_SESSIONLENGTH, action.value = ' + action.newVal)
+      return { ...state, sessionLength: action.newVal };
+
     default:
       return state;
   }
@@ -32,6 +36,14 @@ const updateBreakLength = (newVal) => {
   console.log("call to updateBreakLength, newVal = " + newVal )
   return {
     type: "UPDATE_BREAKLENGTH",
+    newVal: newVal
+  }  
+}
+
+const updateSessionLength = (newVal) => {
+  console.log("call to updateSessionLength, newVal = " + newVal )
+  return {
+    type: "UPDATE_SESSIONLENGTH",
     newVal: newVal
   }  
 }
@@ -61,7 +73,7 @@ class Clock extends React.Component {
     super(props)
     this.initialState = {
       // breakLength: 5,
-      sessionLength: 25,
+      // sessionLength: 25,
       clockState: "ready",
       minutesLeft: 25,
       secondsLeft: 0,
@@ -84,7 +96,7 @@ class Clock extends React.Component {
       newState.minutesLeft = newVal;
     }
     else if (attr === "session") {
-      newState.sessionLength = newVal;
+      this.props.updateSessionLength(newVal);
       newState.minutesLeft = newVal;
       newState.timeLeft = this.timeLeft(newVal, this.state.secondsLeft);
     }
@@ -174,7 +186,7 @@ class Clock extends React.Component {
         newState.clockState = "break";
       }
       else if (this.state.clockState === "break") {
-        newState.minutesLeft = this.state.sessionLength;
+        newState.minutesLeft = this.props.sessionLength;
         newState.clockState = "session"
       }
       let beep = document.getElementById("beep")
@@ -215,15 +227,15 @@ class Clock extends React.Component {
             <Button id="session-decrement"
               buttonText="-"
               attr="session"
-              newVal={this.state.sessionLength - 1}
+              newVal={this.props.sessionLength - 1}
               handler={this.handleClick} />
             <Button id="session-increment"
               buttonText="+"
               attr="session"
-              newVal={this.state.sessionLength + 1}
+              newVal={this.props.sessionLength + 1}
               handler={this.handleClick} />
 
-            <p id="session-length">{this.state.sessionLength}</p>
+            <p id="session-length">{this.props.sessionLength}</p>
           </div>
         </div>
 
@@ -259,7 +271,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     updateBreakLength: (newVal) => dispatch(updateBreakLength(newVal)),
-    handleDecrementClick: () => dispatch({type: 'DECREMENT'})
+    updateSessionLength: (newVal) => dispatch(updateSessionLength(newVal)),
   }
 };
 
