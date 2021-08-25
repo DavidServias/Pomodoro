@@ -4,26 +4,38 @@ import { createStore } from 'redux';
 import { Provider, connect } from 'react-redux';
 
 let initialState = {
-  breakLength: 5, 
+  breakLength: 5,
   sessionLength: 25,
   clockState: "ready",
   minutesLeft: 25,
   secondsLeft: 0,
   startButtonText: "start",
-  timeLeft: "25:00"
+  timeLeft: "25:00",
+  yourMom: "sucks"
 }
 
 
 const reducer = function (state = initialState, action) {
+  console.log("reducer called");
   switch (action.type) {
-    case "INCREMENT_BREAK":
-      return Object.assign({}, {breakLength: state.breakLength + 1})
+    case "UPDATE_BREAKLENGTH":
+      console.log('action.type = UPDATE_BREAKLENGTH, action.value = ' + action.newVal)
+      return { ...state, breakLength: action.newVal };
     case "DECREMENT_BREAK":
-      return Object.assign({}, {breakLength: state.breakLength - 1})
+      return Object.assign({}, { breakLength: state.breakLength - 1 })
     default:
       return state;
   }
 };
+
+const updateBreakLength = (newVal) => {
+  console.log("call to updateBreakLength, newVal = " + newVal )
+  return {
+    type: "UPDATE_BREAKLENGTH",
+    newVal: newVal
+  }  
+}
+
 
 let store = createStore(reducer);
 
@@ -35,11 +47,11 @@ const App = () => {
     <Provider store={store}>
       <div className="App">
         <header className="App-header">
-        <ClockContainer />
+          <ClockContainer />
         </header>
       </div>
     </Provider>
-    
+
   );
 }
 
@@ -47,14 +59,15 @@ const App = () => {
 class Clock extends React.Component {
   constructor(props) {
     super(props)
-    this.initialState = { breakLength: 5, 
-                          sessionLength: 25,
-                          clockState: "ready",
-                          minutesLeft: 25,
-                          secondsLeft: 0,
-                          startButtonText: "start",
-                          timeLeft: "25:00",
-                          }
+    this.initialState = {
+      // breakLength: 5,
+      sessionLength: 25,
+      clockState: "ready",
+      minutesLeft: 25,
+      secondsLeft: 0,
+      startButtonText: "start",
+      timeLeft: "25:00",
+    }
 
     this.state = this.initialState;
     this.handleClick = this.handleClick.bind(this)
@@ -66,17 +79,17 @@ class Clock extends React.Component {
   }
   handleClick(attr, newVal) {
     let newState = {}
-    if (attr === "break" ) {
-     newState.breakLength = newVal;
-     newState.minutesLeft = newVal;
+    if (attr === "break") {
+      this.props.updateBreakLength(newVal);
+      newState.minutesLeft = newVal;
     }
-    else if (attr === "session" ) {
-     newState.sessionLength = newVal;
-     newState.minutesLeft = newVal;
-     newState.timeLeft = this.timeLeft(newVal, this.state.secondsLeft);
+    else if (attr === "session") {
+      newState.sessionLength = newVal;
+      newState.minutesLeft = newVal;
+      newState.timeLeft = this.timeLeft(newVal, this.state.secondsLeft);
     }
     this.setState(newState);
-  }    
+  }
   handleReset() {
     clearInterval(this.timerRef.current)
     this.setState(this.initialState);
@@ -89,12 +102,12 @@ class Clock extends React.Component {
     let tickLength = 1000;
     let newState = {};
     if (this.state.clockState === "ready" ||
-    this.state.clockState === "sessionPaused") {
+      this.state.clockState === "sessionPaused") {
       newState.clockState = "session";
       newState.startButtonText = "pause";
       this.setState(newState)
       this.timerRef.current = setInterval(this.decrementTimer, tickLength);
-    }   
+    }
     else if (this.state.clockState === "breakPaused") {
       newState.clockState = "break";
       newState.startButtonText = "pause";
@@ -103,19 +116,19 @@ class Clock extends React.Component {
     }
     else if (this.state.clockState === "session") {
       newState.clockState = "sessionPaused";
-      newState.startButtonText = "resume"; 
+      newState.startButtonText = "resume";
       clearInterval(this.timerRef.current);
       this.setState(newState);
     }
     else if (this.state.clockState === "break") {
       newState.clockState = "breakPaused";
-      newState.startButtonText = "resume"; 
+      newState.startButtonText = "resume";
       clearInterval(this.timerRef.current);
       this.setState(newState);
     }
- 
+
   }
- 
+
   timeLeft(minutesLeft, secondsLeft) {
     // update seconds display
     let secondsDisplay
@@ -135,29 +148,29 @@ class Clock extends React.Component {
     }
     let timeLeft = minutesDisplay + ":" + secondsDisplay
     return timeLeft
-    
+
   }
   decrementTimer() {
     let newState = {};
     // if there is at least one second left, decrement second
-    if (this.state.secondsLeft >  0) {
+    if (this.state.secondsLeft > 0) {
       console.log("timeleft")
       newState.secondsLeft = this.state.secondsLeft - 1;
       newState.minutesLeft = this.state.minutesLeft;
     }
     //seconds at zero, but at least one minute remaining
-     else if (this.state.secondsLeft === 0 &&
-             this.state.minutesLeft > 0) {
-       newState.secondsLeft = 59;
-       newState.minutesLeft = this.state.minutesLeft - 1;
-     }
-    
+    else if (this.state.secondsLeft === 0 &&
+      this.state.minutesLeft > 0) {
+      newState.secondsLeft = 59;
+      newState.minutesLeft = this.state.minutesLeft - 1;
+    }
+
     // if timer has reached zero minutes and zero seconds
     // toggle session/break
     else if (this.state.minutesLeft === 0 &&
-    this.state.secondsLeft === 0) {
+      this.state.secondsLeft === 0) {
       if (this.state.clockState === "session") {
-        newState.minutesLeft = this.state.breakLength;
+        newState.minutesLeft = this.props.breakLength;
         newState.clockState = "break";
       }
       else if (this.state.clockState === "break") {
@@ -168,68 +181,89 @@ class Clock extends React.Component {
       beep.play()
       newState.secondsLeft = 0;
     }
-   
-    newState.timeLeft = this.timeLeft(newState.minutesLeft, 
-                                      newState.secondsLeft)
+
+    newState.timeLeft = this.timeLeft(newState.minutesLeft,
+      newState.secondsLeft)
     this.setState(newState);
-   
-    
+
+
   }
-  render () {
+  render() {
+    console.log(this.props)
     return (
       <div>
         <h1>Clock</h1>
         <div id="outer-box">
-          <div id = "break-container">
-          <p id="break-label">Break Length</p>
-          <Button id = "break-decrement"
-                  buttonText = "-"
-                  attr = "break"
-                  newVal = {this.state.breakLength - 1}
-                  handler = {this.handleClick} />
-          <Button id = "break-increment"
-                  buttonText = "+"
-                  attr = "break"
-                  newVal = {this.state.breakLength + 1}
-                  handler = {this.handleClick} />
-          
-          <p id="break-length">{this.state.breakLength}</p>
+          <div id="break-container">
+            <p id="break-label">Break Length</p>
+            <Button id="break-decrement"
+              buttonText="-"
+              attr="break"
+              newVal={this.props.breakLength - 1}
+              handler={this.handleClick} />
+            <Button id="break-increment"
+              buttonText="+"
+              attr="break"
+              newVal={this.props.breakLength + 1}
+              handler={this.handleClick} />
+
+            <p id="break-length">{this.props.breakLength}</p>
           </div>
-        
-          <div id = "session-container">
-          <p id="session-label">Session Length</p>
-          <Button id = "session-decrement"
-                  buttonText = "-"
-                  attr = "session"
-                  newVal = {this.state.sessionLength - 1}
-                  handler = {this.handleClick} />
-          <Button id = "session-increment"
-                  buttonText = "+"
-                  attr = "session"
-                  newVal = {this.state.sessionLength + 1}
-                  handler = {this.handleClick} />
-          
-          <p id="session-length">{this.state.sessionLength}</p>
+
+          <div id="session-container">
+            <p id="session-label">Session Length</p>
+            <Button id="session-decrement"
+              buttonText="-"
+              attr="session"
+              newVal={this.state.sessionLength - 1}
+              handler={this.handleClick} />
+            <Button id="session-increment"
+              buttonText="+"
+              attr="session"
+              newVal={this.state.sessionLength + 1}
+              handler={this.handleClick} />
+
+            <p id="session-length">{this.state.sessionLength}</p>
           </div>
         </div>
-        
+
         <p id="timer-label">{this.state.clockState}</p>
         <p id="time-left">{this.state.timeLeft}</p>
-        <audio 
-          id = "beep"
-          src = "https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg">
-          </audio>
-        <button id = "start_stop"
-                onClick = {this.startTimer}>
-                  {this.state.startButtonText}</button>
-        <button id = "reset"
-                onClick = {this.handleReset}>reset</button>
+        <audio
+          id="beep"
+          src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg">
+        </audio>
+        <button id="start_stop"
+          onClick={this.startTimer}>
+          {this.state.startButtonText}</button>
+        <button id="reset"
+          onClick={this.handleReset}>reset</button>
       </div>
     )
   }
 }
 
-const ClockContainer = connect()(Clock);
+
+const mapStateToProps = state => {
+  return {
+    breakLength: state.breakLength,
+    sessionLength: state.sessionLength,
+    clockState: state.clockState,
+    minutesLeft: state.minutesLeft,
+    secondsLeft: state.secondsLeft,
+    startButtonText: state.startButtonText,
+    timeLeft: state.timeLeft
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    updateBreakLength: (newVal) => dispatch(updateBreakLength(newVal)),
+    handleDecrementClick: () => dispatch({type: 'DECREMENT'})
+  }
+};
+
+const ClockContainer = connect(mapStateToProps, mapDispatchToProps)(Clock);
 
 
 class Button extends React.Component {
@@ -240,23 +274,22 @@ class Button extends React.Component {
   }
   eventHandler() {
     if (this.props.newVal <= 60 && this.props.newVal >= 1) {
-      this.props.handler( this.props.attr, this.props.newVal);  
+      this.props.handler(this.props.attr, this.props.newVal);
     }
-    
+
 
   }
   render() {
     return (
-      <button id = {this.props.id}
-              onClick = {this.eventHandler}>
-              {this.props.buttonText}</button>
+      <button id={this.props.id}
+        onClick={this.eventHandler}>
+        {this.props.buttonText}</button>
     )
-    
+
 
   }
 }
 
-// just a little comment
 
 // ReactDOM.render(<App/>, document.getElementById('root'));
 
