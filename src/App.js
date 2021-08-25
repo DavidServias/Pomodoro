@@ -256,6 +256,7 @@ class Button extends React.Component {
   }
 }
 
+// just a little comment
 
 // ReactDOM.render(<App/>, document.getElementById('root'));
 
