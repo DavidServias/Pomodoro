@@ -18,40 +18,34 @@ let initialState = {
 const reducer = function (state = initialState, action) {
   console.log("reducer called");
   switch (action.type) {
-
     case "UPDATE_BREAKLENGTH":
-      console.log('action.type = UPDATE_BREAKLENGTH, action.value = ' + action.newVal)
       return { ...state, breakLength: action.newVal };
-
     case "UPDATE_SESSIONLENGTH":
-      console.log('action.type = UPDATE_SESSIONLENGTH, action.value = ' + action.newVal)
       return { ...state, sessionLength: action.newVal };
-
+    case "UPDATE_MINUTESLEFT":
+      return { ...state, minutesLeft: action.newVal };
+    case "UPDATE_CLOCKSTATE":
+      return { ...state, clockState: action.newState };
     default:
       return state;
   }
 };
 
 const updateBreakLength = (newVal) => {
-  console.log("call to updateBreakLength, newVal = " + newVal )
-  return {
-    type: "UPDATE_BREAKLENGTH",
-    newVal: newVal
-  }  
+  return {type: "UPDATE_BREAKLENGTH", newVal: newVal }  
 }
-
 const updateSessionLength = (newVal) => {
-  console.log("call to updateSessionLength, newVal = " + newVal )
-  return {
-    type: "UPDATE_SESSIONLENGTH",
-    newVal: newVal
-  }  
+  return {type: "UPDATE_SESSIONLENGTH", newVal: newVal }  
+}
+const updateMinutesLeft = (newVal) => {
+  return {type: "UPDATE_MINUTESLEFT", newVal: newVal}  
+}
+const updateClockState = (newState) => {
+  return {type: "UPDATE_CLOCKSTATE", newState: newState}  
 }
 
 
 let store = createStore(reducer);
-
-
 
 
 const App = () => {
@@ -74,8 +68,8 @@ class Clock extends React.Component {
     this.initialState = {
       // breakLength: 5,
       // sessionLength: 25,
-      clockState: "ready",
-      minutesLeft: 25,
+      // clockState: "ready",
+      // minutesLeft: 25,
       secondsLeft: 0,
       startButtonText: "start",
       timeLeft: "25:00",
@@ -93,11 +87,11 @@ class Clock extends React.Component {
     let newState = {}
     if (attr === "break") {
       this.props.updateBreakLength(newVal);
-      newState.minutesLeft = newVal;
+      // this.props.updateMinutesLeft(newVal);
     }
     else if (attr === "session") {
       this.props.updateSessionLength(newVal);
-      newState.minutesLeft = newVal;
+      // this.props.updateMinutesLeft(newVal);
       newState.timeLeft = this.timeLeft(newVal, this.state.secondsLeft);
     }
     this.setState(newState);
@@ -113,27 +107,27 @@ class Clock extends React.Component {
   startTimer() {
     let tickLength = 1000;
     let newState = {};
-    if (this.state.clockState === "ready" ||
-      this.state.clockState === "sessionPaused") {
-      newState.clockState = "session";
+    if (this.props.clockState === "ready" ||
+      this.props.clockState === "sessionPaused") {
+      this.props.updateClockState("session");
       newState.startButtonText = "pause";
       this.setState(newState)
       this.timerRef.current = setInterval(this.decrementTimer, tickLength);
     }
-    else if (this.state.clockState === "breakPaused") {
-      newState.clockState = "break";
+    else if (this.props.clockState === "breakPaused") {
+      this.props.updateClockState("break");
       newState.startButtonText = "pause";
       this.setState(newState);
       this.timerRef.current = setInterval(this.decrementTimer, tickLength);
     }
-    else if (this.state.clockState === "session") {
-      newState.clockState = "sessionPaused";
+    else if (this.props.clockState === "session") {
+      this.props.updateClockState("sessionPaused");
       newState.startButtonText = "resume";
       clearInterval(this.timerRef.current);
       this.setState(newState);
     }
-    else if (this.state.clockState === "break") {
-      newState.clockState = "breakPaused";
+    else if (this.props.clockState === "break") {
+      this.props.updateClockState("breakPaused");
       newState.startButtonText = "resume";
       clearInterval(this.timerRef.current);
       this.setState(newState);
@@ -172,29 +166,29 @@ class Clock extends React.Component {
     }
     //seconds at zero, but at least one minute remaining
     else if (this.state.secondsLeft === 0 &&
-      this.state.minutesLeft > 0) {
+      this.props.minutesLeft > 0) {
       newState.secondsLeft = 59;
-      newState.minutesLeft = this.state.minutesLeft - 1;
+      this.props.updateMinutesLeft(this.props.minutesLeft - 1);
     }
 
     // if timer has reached zero minutes and zero seconds
     // toggle session/break
-    else if (this.state.minutesLeft === 0 &&
+    else if (this.props.minutesLeft === 0 &&
       this.state.secondsLeft === 0) {
-      if (this.state.clockState === "session") {
-        newState.minutesLeft = this.props.breakLength;
-        newState.clockState = "break";
+      if (this.props.clockState === "session") {
+        this.props.updateMinutesLeft(this.props.breakLength);
+        this.props.updateClockState("break");
       }
-      else if (this.state.clockState === "break") {
-        newState.minutesLeft = this.props.sessionLength;
-        newState.clockState = "session"
+      else if (this.props.clockState === "break") {
+        this.props.updateMinutesLeft(this.props.sessionLength);
+        this.props.updateClockState("session");
       }
       let beep = document.getElementById("beep")
       beep.play()
       newState.secondsLeft = 0;
     }
 
-    newState.timeLeft = this.timeLeft(newState.minutesLeft,
+    newState.timeLeft = this.timeLeft(this.props.minutesLeft,
       newState.secondsLeft)
     this.setState(newState);
 
@@ -239,7 +233,7 @@ class Clock extends React.Component {
           </div>
         </div>
 
-        <p id="timer-label">{this.state.clockState}</p>
+        <p id="timer-label">{this.props.clockState}</p>
         <p id="time-left">{this.state.timeLeft}</p>
         <audio
           id="beep"
@@ -272,6 +266,9 @@ const mapDispatchToProps = dispatch => {
   return {
     updateBreakLength: (newVal) => dispatch(updateBreakLength(newVal)),
     updateSessionLength: (newVal) => dispatch(updateSessionLength(newVal)),
+    updateMinutesLeft: (newVal) => dispatch(updateMinutesLeft(newVal)),
+    updateClockState: (newState) => dispatch(updateClockState(newState))
+
   }
 };
 
