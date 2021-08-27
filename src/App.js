@@ -10,8 +10,8 @@ let initialState = {
   minutesLeft: 25,
   secondsLeft: 0,
   startButtonText: "start",
-  timeLeft: "25:00",
-  yourMom: "sucks"
+  timeLeft: "25:00"
+
 }
 
 
@@ -30,6 +30,8 @@ const reducer = function (state = initialState, action) {
       return { ...state, clockState: action.newState };
     case "UPDATE_STARTBUTTONTEXT":
       return { ...state, startButtonText: action.newText };
+    case "UPDATE_TIMELEFT":
+      return { ...state, timeLeft: action.newTimeLeft };
     default:
       return state;
   }
@@ -52,6 +54,9 @@ const updateClockState = (newState) => {
 }
 const updateStartButtonText = (newText) => {
   return { type: "UPDATE_STARTBUTTONTEXT", newText: newText }
+}
+const updateTimeLeft = (newTimeLeft) => {
+  return { type: "UPDATE_TIMELEFT", newTimeLeft: newTimeLeft }
 }
 
 
@@ -82,7 +87,7 @@ class Clock extends React.Component {
       // minutesLeft: 25,
       //secondsLeft: 0,
       // startButtonText: "start",
-      timeLeft: "25:00",
+      //timeLeft: "25:00",
     }
 
     this.state = this.initialState;
@@ -90,7 +95,8 @@ class Clock extends React.Component {
     this.handleReset = this.handleReset.bind(this)
     this.decrementTimer = this.decrementTimer.bind(this)
     this.startTimer = this.startTimer.bind(this)
-    this.timeLeft = this.timeLeft.bind(this)
+    // TO DO: this should maybe be renamed so as not to be confused with the prop
+    this.timeLeftString = this.timeLeftString.bind(this)
     this.timerRef = React.createRef();
   }
   handleClick(attr, newVal) {
@@ -102,7 +108,8 @@ class Clock extends React.Component {
     else if (attr === "session") {
       this.props.updateSessionLength(newVal);
       // this.props.updateMinutesLeft(newVal);
-      newState.timeLeft = this.timeLeft(newVal, this.props.secondsLeft);
+      this.props.updateTimeLeft(this.timeLeftString(newVal, this.props.secondsLeft));
+      //newState.timeLeft = this.timeLeft(newVal, this.props.secondsLeft);
     }
     this.setState(newState);
   }
@@ -149,7 +156,7 @@ class Clock extends React.Component {
 
   }
 
-  timeLeft(minutesLeft, secondsLeft) {
+  timeLeftString(minutesLeft, secondsLeft) {
     // update seconds display
     let secondsDisplay
     if (secondsLeft >= 10) {
@@ -203,8 +210,10 @@ class Clock extends React.Component {
       this.props.updateSecondsLeft(0);
     }
 
-    newState.timeLeft = this.timeLeft(this.props.minutesLeft,
-      this.props.secondsLeft);
+    this.props.updateTimeLeft(this.timeLeftString(this.props.minutesLeft,
+      this.props.secondsLeft));
+    // newState.timeLeft = this.timeLeft(this.props.minutesLeft,
+    //   this.props.secondsLeft);
     this.setState(newState);
 
 
@@ -249,7 +258,7 @@ class Clock extends React.Component {
         </div>
 
         <p id="timer-label">{this.props.clockState}</p>
-        <p id="time-left">{this.state.timeLeft}</p>
+        <p id="time-left">{this.props.timeLeft}</p>
         <audio
           id="beep"
           src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg">
@@ -284,7 +293,9 @@ const mapDispatchToProps = dispatch => {
     updateMinutesLeft: (newVal) => dispatch(updateMinutesLeft(newVal)),
     updateSecondsLeft: (newVal) => dispatch(updateSecondsLeft(newVal)),
     updateClockState: (newState) => dispatch(updateClockState(newState)),
-    updateStartButtonText: (newText) => dispatch(updateStartButtonText(newText))
+    updateStartButtonText: (newText) => dispatch(updateStartButtonText(newText)),
+    updateTimeLeft: (newTimeLeft) => dispatch(updateTimeLeft(newTimeLeft))
+
 
   }
 };
