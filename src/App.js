@@ -14,7 +14,6 @@ let initialState = {
 
 }
 
-
 const reducer = function (state = initialState, action) {
   console.log("reducer called");
   switch (action.type) {
@@ -32,6 +31,8 @@ const reducer = function (state = initialState, action) {
       return { ...state, startButtonText: action.newText };
     case "UPDATE_TIMELEFT":
       return { ...state, timeLeft: action.newTimeLeft };
+    case "RESET_STATE":
+      return {...initialState}
     default:
       return state;
   }
@@ -57,6 +58,9 @@ const updateStartButtonText = (newText) => {
 }
 const updateTimeLeft = (newTimeLeft) => {
   return { type: "UPDATE_TIMELEFT", newTimeLeft: newTimeLeft }
+}
+const resetState = () => {
+  return { type: "RESET_STATE"}
 }
 
 
@@ -115,7 +119,8 @@ class Clock extends React.Component {
   }
   handleReset() {
     clearInterval(this.timerRef.current)
-    this.setState(this.initialState);
+    this.props.resetState();
+    // this.setState(this.initialState);
     let beep = document.getElementById("beep")
     beep.pause();
     beep.currentTime = 0;
@@ -294,7 +299,8 @@ const mapDispatchToProps = dispatch => {
     updateSecondsLeft: (newVal) => dispatch(updateSecondsLeft(newVal)),
     updateClockState: (newState) => dispatch(updateClockState(newState)),
     updateStartButtonText: (newText) => dispatch(updateStartButtonText(newText)),
-    updateTimeLeft: (newTimeLeft) => dispatch(updateTimeLeft(newTimeLeft))
+    updateTimeLeft: (newTimeLeft) => dispatch(updateTimeLeft(newTimeLeft)),
+    resetState: () => dispatch(resetState())
 
 
   }
